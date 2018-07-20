@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
+	"github.com/koyuta/go-application-sample/interfaces/repository"
 )
 
 // MySQLHandler acts as the MySQL client.
@@ -13,19 +15,19 @@ type MySQLHandler struct {
 
 // NewMsHandler returns a new MySQLHandler. It invokes panic if some error occurerd.
 func NewMySQLHandler(user, passwd, host string, port int, dbname string) (*MySQLHandler, error) {
-	uri := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", user, passwd, host, port, database)
+	uri := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true", user, passwd, host, port, dbname)
 	conn, err := sql.Open("mysql", uri)
 	if err != nil {
 		return nil, err
 	}
 
-	return &MySQLHandler{Conn: conn}, err
+	return &MySQLHandler{conn: conn}, err
 }
 
 // Execute execute a query via Conn.Exec function. It expects
 // to use CREATE, UPDATE, DELETE commands.
 func (m *MySQLHandler) Execute(query string, args ...interface{}) (repository.Result, error) {
-	res, err := m.Conn.Exec(query, args...)
+	res, err := m.conn.Exec(query, args...)
 	if err != nil {
 		return new(Result), err
 	}
@@ -35,7 +37,7 @@ func (m *MySQLHandler) Execute(query string, args ...interface{}) (repository.Re
 // ExecuteContext execute a query via Conn.ExecContext function. It expects
 // to use CREATE, UPDATE, DELETE commands.
 func (m *MySQLHandler) ExecuteContext(ctx context.Context, query string, args ...interface{}) (repository.Result, error) {
-	res, err := m.Conn.ExecContext(ctx, query, args...)
+	res, err := m.conn.ExecContext(ctx, query, args...)
 	if err != nil {
 		return new(Result), err
 	}
@@ -45,7 +47,7 @@ func (m *MySQLHandler) ExecuteContext(ctx context.Context, query string, args ..
 // Query execute a query via Conn.Query function.
 // It expects to use SELECT command.
 func (m *MySQLHandler) Query(query string, args ...interface{}) (repository.Rows, error) {
-	res, err := m.Conn.Query(query, args...)
+	res, err := m.conn.Query(query, args...)
 	if err != nil {
 		return new(Rows), err
 	}
@@ -55,7 +57,7 @@ func (m *MySQLHandler) Query(query string, args ...interface{}) (repository.Rows
 // QueryContext execute a query via Conn.QueryContext function.
 // It expects to use SELECT command.
 func (m *MySQLHandler) QueryContext(ctx context.Context, query string, args ...interface{}) (repository.Rows, error) {
-	res, err := m.Conn.QueryContext(ctx, query, args...)
+	res, err := m.conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		return new(Rows), err
 	}
